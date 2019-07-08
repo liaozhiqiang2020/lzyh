@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:context="http://www.springframework.org/schema/context" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:aop="http://www.springframework.org/schema/aop"
+    xmlns:tx="http://www.springframework.org/schema/tx" xmlns:p="http://www.springframework.org/schema/p" xmlns:util="http://www.springframework.org/schema/util" xmlns:jdbc="http://www.springframework.org/schema/jdbc"
+    xmlns:cache="http://www.springframework.org/schema/cache"
+    xsi:schemaLocation="
+    http://www.springframework.org/schema/beans
+    http://www.springframework.org/schema/beans/spring-beans.xsd
+    http://www.springframework.org/schema/context
+    http://www.springframework.org/schema/context/spring-context.xsd
+    http://www.springframework.org/schema/tx
+    http://www.springframework.org/schema/tx/spring-tx.xsd
+    http://www.springframework.org/schema/jdbc
+    http://www.springframework.org/schema/jdbc/spring-jdbc.xsd
+    http://www.springframework.org/schema/cache
+    http://www.springframework.org/schema/cache/spring-cache.xsd
+    http://www.springframework.org/schema/aop
+    http://www.springframework.org/schema/aop/spring-aop.xsd
+    http://www.springframework.org/schema/util
+    http://www.springframework.org/schema/util/spring-util.xsd">
+    
+    <context:property-placeholder location="classpath*:config.properties" ignore-unresolvable="true"/>  
+   
+    
+    <import resource="applicationContext-quartz.xml"/>
+    
+    
+    <bean name="mainConfig" class="com.wl.tools.IniFileOperator" scope="singleton">
+    <constructor-arg value="${agentconfig}"/>
+    </bean>
+    
+   
+    
+    <!-- 本地netty http服务 -->
+    <bean name="locHttpServer" class="com.wl.netty.http.server.MyNettyHttpServer" init-method="startServer">
+    <property name="httpPort" value="${httpSvrPort}"/>
+    <property name="httpFileServer" ref="httpFileServer"/>
+    </bean>
+    
+    
+    
+    <!-- 设备签到 -->
+    <bean name="logon" class="com.wl.spring.base.action.DeviceLogn" init-method="logons" >
+    <property name="ebagentconfig" value="${ebagentconfig}"/>
+    <property name="httpClient" ref="httpClient"/>
+    <property name="mainConfig" ref="mainConfig"/>
+    </bean>
+    
+    <!-- 自动更新凭证配置文件 -->
+    <bean name="UPVC" class="com.wl.spring.base.action.UpdateVoucherXML" init-method="update">
+    <property name="ftp" ref="ftpVoucherXml"/>
+    </bean>
+    
+  
+  
+   <!-- 更新agentconfig.ini配置文件 -->
+   <bean name="UPAG" class="com.wl.spring.base.action.UpdateIniFile" lazy-init="true" scope="prototype">
+   <property name="configFile" value="${agentconfig}"/>
+   <property name="desc" value="更新agentconfig.ini配置文件"/>
+   </bean>
+   
+   <!-- 获取agentconfig.ini配置文件 -->
+    <bean name="GTAG" class="com.wl.spring.base.action.GetIniFileToJSON" lazy-init="true" scope="prototype">
+   <property name="configFile" value="${agentconfig}"/>
+    <property name="desc" value="获取agentconfig.ini配置文件"/>
+   </bean>
+   
+   <!-- 本地截屏上传 -->
+    <bean name="SCSH" class="com.wl.spring.base.action.ScreenCaptrue" lazy-init="true" scope="prototype">
+   <property name="configFile" value="${agentconfig}"/>
+   <property name="ftp" ref="ftpScreenShot"/>
+    <property name="desc" value="本地截屏上传"/>
+   </bean>
+   
+   <!-- 关机 -->
+   <bean name="SHDN" class="com.wl.spring.base.action.ShutDownPC" lazy-init="true">
+    <property name="desc" value="关机"/>
+   </bean>
+   
+   <!-- 重启 -->
+   <bean name="REBT" class="com.wl.spring.base.action.RebootPC" lazy-init="true">
+    <property name="desc" value="重启"/>
+   </bean>
+   
+   <!-- 取消关机或重启命令 -->
+   <bean name="CLMD" class="com.wl.spring.base.action.CancleCMD" lazy-init="true">
+    <property name="desc" value="取消关机或重启命令"/>
+   </bean>
+   
+   <!-- 上传日志 -->
+   <bean name="UPLG" class="com.wl.spring.base.action.UploadLogs" scope="prototype">
+   <property name="section" value="zzagentlog"/>
+   <property name="ftp" ref="commonftp"/>
+   <property name="desc" value="上传agent日志"/>
+   </bean>
+   
+   <!-- 更新驱动 -->
+   <bean name="UPDR" class="com.wl.spring.base.action.UpGradeDriver" scope="prototype">
+    <property name="section" value="driverftp"/>
+    <property name="ftp" ref="commonftp"/>
+    <property name="desc" value="更新驱动"/>
+   </bean>
+   
+   
+   <!-- 创建凭证 -->
+   <bean name="CreatVoucher" class="com.wl.spring.base.action.CreateVoucher" scope="prototype">
+   <property name="configFile" value="${agentconfig}"/>
+   <property name="ftp" ref="commonftp"/>
+   <property name="ftpSection" value="voucherFtp"/>
+   <property name="desc" value="创建凭证"/>
+   </bean>
+  
+    
+  
+  
+  
+    
+    </beans>
